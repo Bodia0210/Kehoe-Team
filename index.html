@@ -5,12 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Наша команда - Kehoe Equipment</title>
   <style>
-    :root {
-      --bg: #0b0f14;
-    }
-    html, body {
-      height: 100%;
-    }
+    :root { --bg: #0b0f14; }
+    html, body { height: 100%; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -18,208 +14,126 @@
       color: #fff;
       font-family: Arial, sans-serif;
     }
-
     .wrapper {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
       overflow: hidden;
     }
-
     .inner {
-      --w: 180px;
-      --h: 240px;
+      --w: 180px; --h: 240px;
       --translateZ: calc((var(--w) + var(--h)));
-      --rotateX: -10deg;
-      --perspective: 1200px;
-      position: relative;
-      width: var(--w);
-      height: var(--h);
+      --rotateX: -10deg; --perspective: 1200px;
+      position: relative; width: var(--w); height: var(--h);
       transform-style: preserve-3d;
       transform: perspective(var(--perspective));
       animation: rotating 25s linear infinite;
     }
-
     @keyframes rotating {
-      from {
-        transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0turn);
-      }
-      to {
-        transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(1turn);
-      }
+      from { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0turn); }
+      to   { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(1turn); }
     }
-
     .card {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 14px;
-      overflow: hidden;
-      inset: 0;
-      transform: rotateY(calc((360deg / var(--quantity)) * var(--index)))
-        translateZ(var(--translateZ));
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border-radius: 14px; overflow: hidden;
+      transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ));
       background: #0d1218;
       box-shadow: 0 8px 20px rgba(0,0,0,0.45);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
+      display: flex; flex-direction: column; justify-content: flex-end;
     }
-
     .img {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
       z-index: 1;
     }
-
     .info {
-      position: relative;
-      z-index: 2;
+      position: relative; z-index: 2;
       background: rgba(0,0,0,0.6);
-      padding: 10px;
-      text-align: center;
+      padding: 10px; text-align: center;
     }
-
-    .info h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
-    .info p {
-      margin: 3px 0 0;
-      font-size: 0.85rem;
-      color: #ccc;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .inner { animation: none; }
-    }
+    .info h3 { margin: 0; font-size: 1rem; }
+    .info p  { margin: 3px 0 0; font-size: 0.85rem; color: #ccc; }
+    @media (prefers-reduced-motion: reduce) { .inner { animation: none; } }
   </style>
 </head>
 <body>
   <div class="wrapper">
     <div class="inner" style="--quantity: 15;">
-      
+
       <div class="card" style="--index: 0;">
-        <div class="img" style="background-image: url('/picture/Darren.jpg');"></div>
-        <div class="info">
-          <h3>Darren McPherson</h3>
-          <p>President</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Darren.jpg');"></div>
+        <div class="info"><h3>Darren McPherson</h3><p>President</p></div>
       </div>
 
       <div class="card" style="--index: 1;">
-        <div class="img" style="background-image: url('/picture/David.jpg');"></div>
-        <div class="info">
-          <h3>David Ross</h3>
-          <p>Aftermarket Sales Manager</p>
-        </div>
+        <div class="img" style="background-image: url('picture/David.jpg');"></div>
+        <div class="info"><h3>David Ross</h3><p>Aftermarket Sales Manager</p></div>
       </div>
 
       <div class="card" style="--index: 2;">
         <div class="img" style="background-image: url('picture/Jim.jpeg');"></div>
-        <div class="info">
-          <h3>James Chanen</h3>
-          <p>Aftermarket sales & Supplemental IT</p>
-        </div>
+        <div class="info"><h3>James Chanen</h3><p>Aftermarket sales &amp; Supplemental IT</p></div>
       </div>
 
       <div class="card" style="--index: 3;">
-        <div class="img" style="background-image: url('/picture/Francis.jpg');"></div>
-        <div class="info">
-          <h3>Francis Gagthan</h3>
-          <p>Aftermarket Sales Support</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Francis.jpg');"></div>
+        <div class="info"><h3>Francis Gagthan</h3><p>Aftermarket Sales Support</p></div>
       </div>
 
       <div class="card" style="--index: 4;">
-        <div class="img" style="background-image: url('/picture/Ross.jpg');"></div>
-        <div class="info">
-          <h3>Ross Undershute</h3>
-          <p>Сonsultant</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Ross.jpg');"></div>
+        <div class="info"><h3>Ross Undershute</h3><p>Consultant</p></div>
       </div>
-                   <!-- Darrell Schraeder -->
+
       <div class="card" style="--index: 5;">
-        <div class="img" style="background-image: url('/picture/Darrell.jfif');"></div>
-        <div class="info">
-          <h3>Darrell Schraeder</h3>
-          <p>Technical Sales</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Darrell.jpg');"></div>
+        <div class="info"><h3>Darrell Schraeder</h3><p>Technical Sales</p></div>
       </div>
 
-        <div class="card" style="--index: 6;">
-        <div class="img" style="background-image: url('/picture/Scott.jpg');"></div>
-        <div class="info">
-          <h3>Scott Gillanders</h3>
-          <p>Technical Sales</p>
-        </div>
+      <div class="card" style="--index: 6;">
+        <div class="img" style="background-image: url('picture/Scott.jpg');"></div>
+        <div class="info"><h3>Scott Gillanders</h3><p>Technical Sales</p></div>
       </div>
 
-        <div class="card" style="--index: 7;">
-        <div class="img" style="background-image: url('/picture/Cody.jpg');"></div>
-        <div class="info">
-          <h3>Cody Byar</h3>
-          <p>Technical Sales</p>
-        </div>
+      <div class="card" style="--index: 7;">
+        <div class="img" style="background-image: url('picture/Cody.jpg');"></div>
+        <div class="info"><h3>Cody Byar</h3><p>Technical Sales</p></div>
       </div>
 
       <div class="card" style="--index: 8;">
-        <div class="img" style="background-image: url('/picture/Val.jpg');"></div>
-        <div class="info">
-          <h3>Val Woodward</h3>
-          <p>Accounting</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Val.jpg');"></div>
+        <div class="info"><h3>Val Woodward</h3><p>Accounting</p></div>
       </div>
 
       <div class="card" style="--index: 9;">
-        <div class="img" style="background-image: url('/picture/Melany.jpg');"></div>
-        <div class="info">
-          <h3>Melany Forsyth</h3>
-          <p>Technical Sales</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Melany.jpg');"></div>
+        <div class="info"><h3>Melany Forsyth</h3><p>Technical Sales</p></div>
       </div>
 
       <div class="card" style="--index: 10;">
-        <div class="img" style="background-image: url('/picture/Melanie.jpg');"></div>
-        <div class="info">
-          <h3>Melanie Jenkins</h3>
-          <p>Office Admin</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Melanie.jpg');"></div>
+        <div class="info"><h3>Melanie Jenkins</h3><p>Office Admin</p></div>
       </div>
 
       <div class="card" style="--index: 11;">
-        <div class="img" style="background-image: url('/picture/Jerry.jfif');"></div>
-        <div class="info">
-          <h3>Jerry Krawec</h3>
-          <p>Aftermarket sales</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Jerry.jpg');"></div>
+        <div class="info"><h3>Jerry Krawec</h3><p>Aftermarket sales</p></div>
       </div>
 
       <div class="card" style="--index: 12;">
-        <div class="img" style="background-image: url('/picture/Bohdan.jpg');"></div>
-        <div class="info">
-          <h3>Bohdan Posykaliuk</h3>
-          <p>Aftermarket Sales Support-Shipping & Receiving</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Bohdan.jpg');"></div>
+        <div class="info"><h3>Bohdan Posykaliuk</h3><p>Aftermarket Sales Support — Shipping &amp; Receiving</p></div>
       </div>
 
+      <!-- ВАЖЛИВО: тут ми БІЛЬШЕ НЕ вставляємо CSS, лише картку -->
       <div class="card" style="--index: 13;">
-        <div class="img" style="background-image: url('/picture/Alibhon.jpg');"></div>
-        <div class="info">
-          <h3>Alibhon Akpila</h3>
-          <p>Project Coordinator</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Alibhon.jpg');"></div>
+        <div class="info"><h3>Alibhon Akpila</h3><p>Project Coordinator</p></div>
       </div>
 
       <div class="card" style="--index: 14;">
-        <div class="img" style="background-image: url('/picture/Asheil.jfif');"></div>
-        <div class="info">
-          <h3>Asheil Bissonauth</h3>
-          <p>Technical Sales</p>
-        </div>
+        <div class="img" style="background-image: url('picture/Asheil.jpg');"></div>
+        <div class="info"><h3>Asheil Bissonauth</h3><p>Technical Sales</p></div>
       </div>
 
     </div>
