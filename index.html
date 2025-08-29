@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -10,7 +11,13 @@
     body {
       margin: 0;
       min-height: 100vh;
-      background: radial-gradient(1200px 600px at 50% 10%, #16202c 0%, var(--bg) 60%, #070a0f 100%);
+      background: linear-gradient(
+  to bottom right,
+  red 0% 33%,
+  blue 33% 66%,
+  green 66% 100%
+);
+
       color: #fff;
       font-family: Arial, sans-serif;
     }
@@ -20,13 +27,13 @@
       overflow: hidden;
     }
     .inner {
-      --w: 180px; --h: 240px;
+      --w: 225px; --h: 350px;
       --translateZ: calc((var(--w) + var(--h)));
       --rotateX: -10deg; --perspective: 1200px;
       position: relative; width: var(--w); height: var(--h);
       transform-style: preserve-3d;
       transform: perspective(var(--perspective));
-      animation: rotating 25s linear infinite;
+      animation: rotating 55s linear infinite;
     }
     @keyframes rotating {
       from { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0turn); }
