@@ -1,61 +1,51 @@
-/* From Uiverse.io by ilkhoeri */ 
-.wrapper {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
+    :root { --bg: #0b0f14; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #df080b 5%, #4e05ee 40%, #06f332 100%);
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    .wrapper {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .inner {
+      --w: 225px; --h: 350px;
+      --translateZ: calc((var(--w) + var(--h)));
+      --rotateX: -10deg; --perspective: 1200px;
+      position: relative; width: var(--w); height: var(--h);
+      transform-style: preserve-3d;
+      transform: perspective(var(--perspective));
+      animation: rotating 55s linear infinite;
+    }
+    @keyframes rotating {
+      from { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0turn); }
+      to   { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(1turn); }
+    }
+    .card {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border-radius: 14px; overflow: hidden;
+      transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ));
+      background: #0d1218;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .img {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      z-index: 1;
+    }
+    .info {
+      position: relative; z-index: 2;
+      background: rgba(0,0,0,0.6);
+      padding: 10px; text-align: center;
+    }
+    .info h3 { margin: 0; font-size: 1rem; }
+    .info p  { margin: 3px 0 0; font-size: 0.85rem; color: #ccc; }
+    @media (prefers-reduced-motion: reduce) { .inner { animation: none; } }
 
-.inner {
-  --w: 100px;
-  --h: 150px;
-  --translateZ: calc((var(--w) + var(--h)) + 0px);
-  --rotateX: -15deg;
-  --perspective: 1000px;
-  position: absolute;
-  width: var(--w);
-  height: var(--h);
-  top: 25%;
-  left: calc(50% - (var(--w) / 2) - 2.5px);
-  z-index: 2;
-  transform-style: preserve-3d;
-  transform: perspective(var(--perspective));
-  animation: rotating 20s linear infinite; /* */
-}
-@keyframes rotating {
-  from {
-    transform: perspective(var(--perspective)) rotateX(var(--rotateX))
-      rotateY(0);
-  }
-  to {
-    transform: perspective(var(--perspective)) rotateX(var(--rotateX))
-      rotateY(1turn);
-  }
-}
-
-.card {
-  position: absolute;
-  border: 2px solid rgba(var(--color-card));
-  border-radius: 12px;
-  overflow: hidden;
-  inset: 0;
-  transform: rotateY(calc((360deg / var(--quantity)) * var(--index)))
-    translateZ(var(--translateZ));
-}
-
-.img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background: #0000
-    radial-gradient(
-      circle,
-      rgba(var(--color-card), 0.2) 0%,
-      rgba(var(--color-card), 0.6) 80%,
-      rgba(var(--color-card), 0.9) 100%
-    );
-}
+  
