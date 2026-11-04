@@ -1,0 +1,24 @@
+/* Original company marks on the light/dark surfaces they were designed for. */
+.joint-workspace{display:block;text-align:center;padding:17px 0 18px;margin:0 4px 19px;border-top:1px solid #ffffff14}
+.joint-workspace>small{display:block;color:#afc2b7;font-size:9px;margin-top:12px;letter-spacing:.3px}
+.company-logo-pair{display:flex;align-items:center;justify-content:center;gap:9px;flex:none}
+.company-logo-frame{display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:7px;border:1px solid transparent}
+.company-logo-frame img{display:block;object-fit:contain;height:auto;width:100%;max-height:100%}
+.company-logo-frame--kehoe{background:#fff;border-color:#e5eae4}
+.company-logo-frame--midwest{background:#202a31;border-color:#344048}
+.company-logo-join{font-family:Manrope,system-ui,sans-serif;font-size:15px;line-height:1;font-weight:450;color:#a1b2a1;flex:none}
+.company-logo-pair--sidebar{gap:7px}
+.company-logo-pair--sidebar .company-logo-frame{height:44px;padding:8px 7px;flex:1;min-width:0}
+.company-logo-pair--sidebar .company-logo-join{font-size:12px;color:#c5d1bf}
+.company-logo-pair--welcome{flex-direction:column;gap:7px;width:172px;margin-left:20px;padding:4px 0}
+.company-logo-pair--welcome .company-logo-frame{width:170px;height:64px;padding:9px 13px}
+.company-logo-pair--welcome .company-logo-frame--midwest{padding:8px 16px}
+.company-logo-pair--welcome .company-logo-join{font-size:14px;color:#8b9b7e}
+.joint-welcome{min-height:218px}
+.joint-welcome>div:first-child{flex:1;min-width:0}
+.joint-welcome h2{max-width:360px}
+@media(max-width:1390px){.company-logo-pair--sidebar{gap:5px}.company-logo-pair--sidebar .company-logo-frame{height:43px;padding:8px 6px}.company-logo-pair--sidebar .company-logo-join{font-size:11px}}
+@media(max-width:1120px){.joint-workspace{margin-left:1px;margin-right:1px}.company-logo-pair--sidebar{gap:4px}.company-logo-pair--sidebar .company-logo-frame{padding:8px 5px;height:40px}.company-logo-pair--welcome{width:143px;margin-left:15px}.company-logo-pair--welcome .company-logo-frame{width:143px;height:57px;padding:8px 10px}.company-logo-pair--welcome .company-logo-frame--midwest{padding:8px 11px}.joint-welcome h2{font-size:21px}}
+@media(max-width:900px){.company-logo-pair--welcome{width:172px;margin-left:20px}.company-logo-pair--welcome .company-logo-frame{width:170px;height:64px;padding:9px 13px}.company-logo-pair--welcome .company-logo-frame--midwest{padding:8px 16px}}
+@media(max-width:700px){.joint-workspace{margin-left:4px;margin-right:4px}.company-logo-pair--sidebar{gap:7px}.company-logo-pair--sidebar .company-logo-frame{padding:8px;height:44px}.joint-welcome{display:flex;flex-direction:column;align-items:stretch;gap:22px;padding:23px 20px}.joint-welcome h2{max-width:none;font-size:22px}.joint-welcome p{max-width:none;font-size:11px}.company-logo-pair--welcome{flex-direction:row;width:100%;margin:0;padding:17px 0 0;gap:11px;border-top:1px solid #d9e3cb}.company-logo-pair--welcome .company-logo-frame{width:auto;flex:1;min-width:0;height:61px;padding:9px}.company-logo-pair--welcome .company-logo-frame--midwest{padding:8px 10px}.company-logo-pair--welcome .company-logo-join{font-size:16px}.company-logo-pair--welcome .company-logo-frame img{width:100%;max-width:145px}.joint-welcome .eyebrow{font-size:8px;line-height:1.8}.joint-welcome .text-button{font-size:10px!important}}
+@media(max-height:760px){.sidebar{overflow-y:auto}.sidebar-note{display:none}.sidebar-bottom{padding-top:15px}}
