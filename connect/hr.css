@@ -9,3 +9,14 @@
 .roster-event.occasion:hover,.roster-event.occasion:focus-visible{background:#fce7ba;outline:2px solid #cf9b46;outline-offset:1px}
 .calendar-event.occasion{background:#fff1d8;color:#94651f;border:1px dashed #d6a14f;display:flex;align-items:center;gap:4px}
 .calendar-event.occasion:hover,.calendar-event.occasion:focus-visible{background:#fce7ba}
+
+/* Sick leave: reference-style magenta rounded square with white sad-face pictogram. */
+.legend-box.sick{background:#f4064e;color:#fff;border-radius:5px}
+.legend-box.sick .icon{width:19px;height:19px;stroke:none}
+.roster-event.sick{background:#f4064e;color:#fff;border-radius:8px}
+.roster-event.sick .icon{width:24px;height:24px;stroke:none}
+.calendar-event.sick{background:#fff0f4;border-color:#f4064e;color:#a82950;display:flex;align-items:center;gap:5px}
+.calendar-event.sick .icon{width:20px;height:20px;stroke:none;flex:none}
+.request-type-link.sick .icon{width:19px;height:19px;stroke:none}
+.roster-event.pending-event.sick{background:#fff4f6;color:#c43162;border:1.5px dashed #ef6b99}
+.roster-event.pending-event.sick .icon{opacity:.83}
