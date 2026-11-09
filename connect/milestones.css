@@ -1,0 +1,44 @@
+/* Informational company milestones and Alberta holidays */
+.roster-table td{overflow:visible}
+.roster-event.work-milestone{display:inline-flex;align-items:center;gap:1px;width:auto;min-width:31px;padding:0 5px;background:#dfedf7;color:#336c92;border:1px solid #8cb4d0;vertical-align:middle}
+.roster-event.work-milestone .icon{width:14px;height:14px}
+.roster-event.work-milestone .work-years{font-weight:800;font-size:10px}
+.calendar-event.work-milestone{display:flex;align-items:center;gap:4px;padding:4px 6px;background:#e2f0f9;color:#286d94;border:1px solid #8cb4d0;min-width:0}
+.calendar-event.work-milestone .icon{width:12px;height:12px}
+.work-milestone:hover,.work-milestone:focus-visible{outline:2px solid #3d87b0;outline-offset:1px;background:#c6e2f2!important}
+.roster-event.public-holiday{display:inline-flex;align-items:center;justify-content:center;width:27px;height:30px;padding:0;margin-left:2px;background:#f4e7e8;color:#a13a51;border:1px solid #e5bec4;vertical-align:middle}
+.roster-event.public-holiday .icon{width:15px;height:15px}
+.calendar-event.public-holiday{display:flex;align-items:center;gap:4px;padding:4px 6px;background:#fff0f0;color:#96364b;border:1px solid #e9c2c7;min-width:0;white-space:normal;text-align:left}
+.calendar-event.public-holiday .icon{width:12px;height:12px;flex:none}
+.roster-table thead th.general-holiday-head{background:#fff1f1;color:#8d4151}
+.roster-table thead th.general-holiday-head b{color:#8d4151}
+.public-holiday:hover,.public-holiday:focus-visible{outline:2px solid #b95868;outline-offset:1px;background:#ffe6e9!important}
+.roster-table td .work-milestone+.public-holiday{margin-left:3px}
+.work-celebration-backdrop{position:fixed;inset:0;z-index:4000;background:#102b24b8;display:grid;place-items:center;padding:20px;backdrop-filter:blur(7px)}
+.work-celebration{position:relative;isolation:isolate;overflow:hidden;width:min(650px,100%);max-height:90vh;overflow-y:auto;border-radius:26px;background:radial-gradient(circle at 52% 0,#295944,#0b342b 60%,#07271e);color:#fff;border:1px solid #b6d5b063;box-shadow:0 24px 80px #00180d9c}
+.celebration-copy{position:relative;z-index:2;text-align:center;padding:58px clamp(24px,5vw,58px) 34px}
+.celebration-kicker{display:flex;align-items:center;justify-content:center;gap:7px;font-size:11px;letter-spacing:.16em;font-weight:800;color:#b8e0ad}
+.celebration-kicker .icon{width:17px;height:17px;color:#ebc978}
+.work-celebration h2{margin:19px auto 28px;font-size:clamp(27px,4vw,43px);line-height:1.12;letter-spacing:-.04em;color:#f6fce6;text-shadow:0 3px 15px #00291a}
+.celebration-person{display:flex;align-items:center;text-align:left;gap:15px;margin:11px auto;padding:16px;border-radius:15px;background:#f8fff4f0;color:#163d2b;box-shadow:0 7px 25px #021e1247;max-width:490px}
+.celebration-person>.avatar{width:52px;height:52px;flex:none;font-size:13px}
+.celebration-person strong{display:block;font-size:14px;line-height:1.4;color:#14372c}
+.celebration-person p{font-size:13px;line-height:1.6;margin:6px 0 0;color:#456953}
+.celebration-done{display:block;margin:27px auto 0;border-radius:12px;padding:13px 24px;background:#d6f3a5;color:#1d3f2a;font-weight:800;font-size:13px;cursor:pointer}
+.celebration-done:hover,.celebration-done:focus-visible{background:#edfbc4;outline:2px solid white;outline-offset:3px}
+.celebration-dismiss-icon{position:absolute;right:18px;top:18px;z-index:5;background:#ffffff2e;color:#e4f5e4;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.celebration-dismiss-icon .icon{width:16px;height:16px}
+.celebration-preview{font-size:11px;color:#d4eab7;font-style:italic;padding-top:4px}
+.party-scene{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.party-burst{position:absolute;top:9%;left:13%;width:10px;height:10px;animation:burst-float 2.9s ease-in-out infinite}
+.party-burst.burst-1{left:83%;top:21%;animation-delay:.5s}
+.party-burst.burst-2{left:48%;top:5%;animation-delay:1.05s}
+.party-burst i{position:absolute;top:5px;left:5px;width:3px;height:49px;border-radius:50%;background:linear-gradient(#fff4ad,#ffc74c 45%,transparent);transform-origin:50% 0;transform:rotate(var(--angle)) scaleY(.13);opacity:0;animation:burst-ray 2.9s ease-out infinite;animation-delay:var(--delay)}
+.burst-1 i{background:linear-gradient(#a6fcff,#47c4fa 44%,transparent)}
+.burst-2 i{background:linear-gradient(#ffadee,#b987ff 42%,transparent)}
+.party-ribbon{position:absolute;top:-20px;left:var(--x);width:7px;height:21px;border-radius:50% 15% 45% 10%;background:hsl(var(--hue) 85% 70%);box-shadow:0 0 5px #fff4;transform:translateY(-15px) rotate(0);opacity:0;animation:ribbon-fall var(--speed) linear infinite;animation-delay:var(--d)}
+@keyframes burst-ray{0%,10%,100%{transform:rotate(var(--angle)) scaleY(.07);opacity:0}22%{transform:rotate(var(--angle)) scaleY(.9);opacity:1}55%{transform:rotate(var(--angle)) scaleY(1.4);opacity:0}75%{opacity:0}}
+@keyframes burst-float{0%,100%{filter:brightness(.7)}40%{filter:brightness(1.55)}}
+@keyframes ribbon-fall{0%{transform:translateY(-30px) rotate(0);opacity:0}10%{opacity:1}85%{opacity:.95}100%{transform:translateY(720px) rotate(var(--turn));opacity:0}}
+@media(max-width:600px){.work-celebration{max-height:87vh}.celebration-copy{padding:55px 22px 29px}.celebration-person{padding:12px}.celebration-person strong{font-size:13px}.celebration-person p{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.party-burst,.party-burst i,.party-ribbon{animation:none;opacity:.5}.party-burst i{transform:rotate(var(--angle)) scaleY(.6)}}
