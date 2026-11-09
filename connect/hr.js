@@ -15,6 +15,12 @@ Object.assign(dict.en,{
 dict.uk.holidayBonusConflict='Ця зміна активує два використання одного бонусу. Спочатку скасуйте зайву заявку.';
 dict.en.holidayBonusConflict='This change would use the same bonus twice. Withdraw the extra booking first.';
 dict.uk.aboutOneText='Особисті й групові чати, профілі та ролі, погодження відпусток і лікарняних, особистий час у годинах, загальні вихідні, бонуси +1 та експорт календаря для Outlook.';
+dict.en.anniversaryDemoNote='Demo only: Saving an anniversary date creates a +1 anniversary bonus and schedules it on that workday if available. It is not a confirmed company benefit. The booking applies to the selected year only.';
+dict.uk.anniversaryDemoNote='Лише демо: дата річниці додає +1 бонусний день і позначає вихідний у календарі, якщо дата робоча та вільна. Це не затверджена пільга компанії. Бонус стосується вибраного року.';
+dict.en.anniversaryScheduled='A demo anniversary bonus now appears in the calendar.';
+dict.uk.anniversaryScheduled='Тестовий бонус на річницю додано до календаря.';
+dict.en.anniversaryUnscheduled='The bonus is available but cannot be scheduled on that date (weekend, company closure or another absence).';
+dict.uk.anniversaryUnscheduled='Бонус доступний, але не призначений на цю дату (вихідний, закриття компанії або інша відсутність).';
 dict.en.aboutOneText='Direct and group chats, employee profiles and roles, leave approvals, hourly personal time, company days off, separate +1 bonus days and Outlook calendar export.';
 let adminTab='users',calendarMode='team',calendarPending=false,requestStatus='all',requestType='all',adminPeopleQuery='';
 const roleKey=r=>({admin:'adminRole',manager:'managerRole',employee:'employeeRole'}[r]||'employeeRole');
@@ -27,6 +33,42 @@ function companyClosure(date){return (state.holidays||[]).find(h=>h.active!==fal
 function isWorkingDate(date){const day=toDate(date).getDay();return day!==0&&day!==6&&!companyClosure(date)}
 function memberLabel(n){if(lang==='en')return `${n} ${n===1?'member':'members'}`;const category=new Intl.PluralRules('uk').select(n);return `${n} ${category==='one'?'учасник':category==='few'?'учасники':'учасників'}`}
 function personaControl(){return `<label class="persona-control"><span>${esc(t('adminDemo'))}</span><select id="demo-actor" aria-label="${esc(t('adminDemo'))}">${activePeople().map(p=>`<option value="${p.id}" ${p.id===actorId()?'selected':''}>${esc(p.name)} · ${esc(t(roleKey(p.role)))}</option>`).join('')}</select></label>`}
+/* Anniversaries are auto-scheduled in the local demo only, not a KEL policy. */
+function syncAnniversaryDemoBonus(p){
+ const day=p.anniversary||'';
+ const valid=p.active!==false&&validDate(day);
+ const year=valid?Number(day.slice(0,4)):null;
+ const grantId=year===null?'':`anniversary-demo-${p.id}-${year}`;
+ const bookingId=year===null?'':`anniversary-demo-booking-${p.id}-${year}`;
+ const obsolete=state.bonuses.filter(g=>g.autoAnniversaryDemo===true&&g.person===p.id&&g.id!==grantId);
+ const obsoleteIds=new Set(obsolete.map(g=>g.id));
+ if(obsoleteIds.size){
+  state.bonuses=state.bonuses.filter(g=>!obsoleteIds.has(g.id));
+  state.requests=state.requests.filter(r=>!obsoleteIds.has(r.grantId)||r.autoAnniversaryDemo!==true);
+ }
+ if(!valid)return 'none';
+ const manual=state.bonuses.find(g=>g.person===p.id&&g.year===year&&g.reason==='anniversary'&&g.autoAnniversaryDemo!==true&&g.active!==false);
+ if(manual)return 'manual';
+ let grant=state.bonuses.find(g=>g.id===grantId);
+ if(!grant){
+  grant={id:grantId,person:p.id,reason:'anniversary',year,days:1,expiry:'',active:true,
+   created:TODAY,createdBy:'demo',autoAnniversaryDemo:true};
+  state.bonuses.push(grant);
+ }
+ const booked=state.requests.find(r=>r.id===bookingId);
+ if(grant.active===false)return 'revoked';
+ if(booked?.status==='cancelled')return 'cancelled';
+ const requested={id:bookingId,person:p.id,type:'bonus',grantId:grant.id,start:day,end:day,
+  status:'approved',note:'DEMO ONLY — automatically scheduled anniversary bonus; not an approved company policy.',
+  created:TODAY,autoAnniversaryDemo:true};
+ if(!isWorkingDate(day)||overlaps(requested,bookingId)){
+  if(booked?.autoAnniversaryDemo===true)state.requests=state.requests.filter(r=>r.id!==bookingId);
+  return 'unscheduled';
+ }
+ if(booked?.autoAnniversaryDemo===true)Object.assign(booked,requested);
+ else if(!booked)state.requests.push(requested);
+ return 'scheduled';
+}
 function initializeHR(){
  for(const p of state.people){p.role??=p.id==='darren'?'admin':p.id==='david'?'manager':'employee';p.active??=true;p.email??=`${p.id==='me'?'bohdan.demo':p.name.toLowerCase().replace(/[^a-z]+/g,'.')}@example.com`;p.allowances??={vacation:20,sick:7,personal:30};}
  state.settings??={hoursPerDay:8};state.holidays??=[];state.bonuses??=[];state.audit??=[];state.demoActor??='darren';
@@ -36,6 +78,7 @@ function initializeHR(){
   state.bonuses.push({id:'sample-bonus-me',person:'me',reason:'ownerGift',year:Number(TODAY.slice(0,4)),days:1,created:TODAY,createdBy:'me',expiry:'',active:true});
   state.hrVersion=3;
  }
+ for(const p of state.people)syncAnniversaryDemoBonus(p);
  persist();
 }
 function audit(kind,detail){state.audit.push({id:uid(),kind,detail,actor:actorId(),at:new Date().toISOString()})}
@@ -72,7 +115,7 @@ function adminSettings(){return `<form id="settings-form" class="settings-form">
 function adminHistory(){const entries=canAdmin()?state.audit:state.audit.filter(a=>['auditRequest','auditDecision'].includes(a.kind));return entries.length?`<div class="table-wrap"><table class="data-table"><thead><tr><th>${esc(t('auditWhen'))}</th><th>${esc(t('auditActor'))}</th><th>${esc(t('auditAction'))}</th></tr></thead><tbody>${entries.slice().reverse().map(a=>`<tr><td>${esc(new Date(a.at).toLocaleString(locale(),{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))}</td><td>${esc(person(a.actor).name)}</td><td><b>${esc(t(a.kind))}</b><small class="cell-sub">${esc(a.detail)}</small></td></tr>`).join('')}</tbody></table></div>`:empty(icon('clock'),t('noAudit'),'')}
 
 function userForm(id){if(!canAdmin())return;const p=id?person(id):{name:'',email:'',job:'',dept:'warehouse',role:'employee',active:true,birthday:'',anniversary:'',allowances:{vacation:20,sick:7,personal:30}};
- showModal(t(id?'editUser':'addUser'),`<p class="modal-subtitle">${esc(t('profileOnly'))}</p><input type="hidden" name="id" value="${esc(id||'')}"><label class="field"><span>${esc(t('fullName'))}</span><input name="fullName" required maxlength="70" value="${esc(p.name)}" autocomplete="off"></label><label class="field"><span>${esc(t('workEmail'))}</span><input name="email" type="email" required maxlength="140" value="${esc(p.email)}" placeholder="name@company.com" autocomplete="off"></label><div class="field-row"><label class="field"><span>${esc(t('department'))}</span><select name="dept">${['warehouse','projects','office'].map(d=>`<option value="${d}" ${p.dept===d?'selected':''}>${esc(t(d))}</option>`).join('')}</select></label><label class="field"><span>${esc(t('userRole'))}</span><select name="role">${['employee','manager','admin'].map(r=>`<option value="${r}" ${p.role===r?'selected':''}>${esc(t(roleKey(r)))}</option>`).join('')}</select></label></div><label class="field"><span>${esc(t('jobTitle'))}</span><input name="job" maxlength="70" value="${esc(p.job)}"></label><div class="form-section-label">${esc(t('allowanceTitle'))}</div><div class="allowance-fields">${['vacation','sick','personal'].map(k=>`<label class="field"><span>${esc(t(k))} (${esc(t(k==='personal'?'hours':'days'))})</span><input name="${k}" type="number" min="0" max="500" step="0.25" required value="${p.allowances[k]}"></label>`).join('')}</div><div class="field-row"><label class="field"><span>${esc(t('birthdayDate'))}</span><input name="birthday" type="text" inputmode="numeric" placeholder="MM-DD" pattern="[0-9]{2}-[0-9]{2}" value="${esc(p.birthday||'')}"><small>${esc(t('birthdayHelp'))}</small></label><label class="field"><span>${esc(t('anniversaryDate'))}</span><input name="anniversary" type="date" value="${esc(p.anniversary||'')}"></label></div><small class="muted">${esc(t('noAutoGrant'))}</small><label class="switch-field"><input name="active" type="checkbox" ${p.active?'checked':''}>${esc(t('activeUser'))}</label><p class="form-error" id="form-error" role="alert"></p>`,modalActions(t('saveUser')),'user-form');
+ showModal(t(id?'editUser':'addUser'),`<p class="modal-subtitle">${esc(t('profileOnly'))}</p><input type="hidden" name="id" value="${esc(id||'')}"><label class="field"><span>${esc(t('fullName'))}</span><input name="fullName" required maxlength="70" value="${esc(p.name)}" autocomplete="off"></label><label class="field"><span>${esc(t('workEmail'))}</span><input name="email" type="email" required maxlength="140" value="${esc(p.email)}" placeholder="name@company.com" autocomplete="off"></label><div class="field-row"><label class="field"><span>${esc(t('department'))}</span><select name="dept">${['warehouse','projects','office'].map(d=>`<option value="${d}" ${p.dept===d?'selected':''}>${esc(t(d))}</option>`).join('')}</select></label><label class="field"><span>${esc(t('userRole'))}</span><select name="role">${['employee','manager','admin'].map(r=>`<option value="${r}" ${p.role===r?'selected':''}>${esc(t(roleKey(r)))}</option>`).join('')}</select></label></div><label class="field"><span>${esc(t('jobTitle'))}</span><input name="job" maxlength="70" value="${esc(p.job)}"></label><div class="form-section-label">${esc(t('allowanceTitle'))}</div><div class="allowance-fields">${['vacation','sick','personal'].map(k=>`<label class="field"><span>${esc(t(k))} (${esc(t(k==='personal'?'hours':'days'))})</span><input name="${k}" type="number" min="0" max="500" step="0.25" required value="${p.allowances[k]}"></label>`).join('')}</div><div class="field-row"><label class="field"><span>${esc(t('birthdayDate'))}</span><input name="birthday" type="text" inputmode="numeric" placeholder="MM-DD" pattern="[0-9]{2}-[0-9]{2}" value="${esc(p.birthday||'')}"><small>${esc(t('birthdayHelp'))}</small></label><label class="field"><span>${esc(t('anniversaryDate'))}</span><input name="anniversary" type="date" value="${esc(p.anniversary||'')}"></label></div><small class="muted">${esc(t('anniversaryDemoNote'))}</small><label class="switch-field"><input name="active" type="checkbox" ${p.active?'checked':''}>${esc(t('activeUser'))}</label><p class="form-error" id="form-error" role="alert"></p>`,modalActions(t('saveUser')),'user-form');
 }
 function submitUser(form){if(!canAdmin())return;const d=new FormData(form),id=String(d.get('id')),old=id?person(id):null;const name=String(d.get('fullName')).trim(),email=String(d.get('email')).trim().toLowerCase(),role=d.get('role'),active=d.has('active');const err=$('#form-error');const limits=Object.fromEntries(['vacation','sick','personal'].map(k=>[k,Number(d.get(k))]));
  if(!name||!/^\S+@[^\s@]+\.[^\s@]+$/.test(email)||!['employee','manager','admin'].includes(role)||Object.values(limits).some(x=>!Number.isFinite(x)||x<0||x>500)){err.textContent=t('invalidUser');return}
@@ -83,7 +126,8 @@ function submitUser(form){if(!canAdmin())return;const d=new FormData(form),id=St
  const anniversary=String(d.get('anniversary')||'');if(anniversary&&!validDate(anniversary)){err.textContent=t('invalidUser');return}
  const patch={name:name.slice(0,70),email,job:String(d.get('job')).trim().slice(0,70),dept:d.get('dept'),role,active,birthday,anniversary,allowances:limits,initials:name.split(/\s+/).slice(0,2).map(n=>n[0]).join('').toUpperCase()};
  if(old)Object.assign(old,patch);else{const p={...patch,id:uid(),color:'#e2ecde',ink:'#5e8153'};state.people.push(p);for(const c of state.channels.filter(c=>c.kind==='group'&&!c.private))c.members.push(p.id)}
- audit('auditUser',`${name} · ${email}`);persist();closeModal();render();toast(t('userSaved'));
+ const anniversaryResult=syncAnniversaryDemoBonus(old||state.people.at(-1));
+ audit('auditUser',`${name} · ${email}`);persist();closeModal();render();toast(t('userSaved')+(anniversaryResult==='scheduled'?' '+t('anniversaryScheduled'):anniversaryResult==='unscheduled'?' '+t('anniversaryUnscheduled'):''));
 }
 function toggleUser(id){if(!canAdmin())return;const p=person(id);if(p.id===actorId()&&p.active){toast(t('selfDeactivate'));return}if(p.active&&p.role==='admin'&&!state.people.some(x=>x.id!==id&&x.active&&x.role==='admin')){toast(t('lastAdmin'));return}p.active=!p.active;audit('auditUser',`${p.name} · ${p.active?'active':'inactive'}`);persist();render()}
 function holidayForm(id){if(!canAdmin())return;const h=id?state.holidays.find(h=>h.id===id):{title:'',start:nextWork(TODAY,5),end:nextWork(TODAY,5)};showModal(t(id?'editHoliday':'addHoliday'),`<p class="modal-subtitle">${esc(t('closureNote'))}</p><input type="hidden" name="id" value="${esc(id||'')}"><label class="field"><span>${esc(t('holidayTitle'))}</span><input name="title" required maxlength="90" placeholder="${esc(t('holidayPlaceholder'))}" value="${esc(h.nameKey?t(h.nameKey):h.title)}"></label><div class="field-row"><label class="field"><span>${esc(t('from'))}</span><input type="date" name="start" required value="${h.start}"></label><label class="field"><span>${esc(t('to'))}</span><input type="date" name="end" required value="${h.end}"></label></div><div class="request-summary">${icon('calendar')}<span>${esc(t('holidayRecount'))}</span></div><p class="form-error" id="form-error" role="alert"></p>`,modalActions(t('save')),'holiday-form')}
