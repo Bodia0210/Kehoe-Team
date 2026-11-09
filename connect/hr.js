@@ -15,6 +15,12 @@ Object.assign(dict.en,{
 dict.uk.holidayBonusConflict='Ця зміна активує два використання одного бонусу. Спочатку скасуйте зайву заявку.';
 dict.en.holidayBonusConflict='This change would use the same bonus twice. Withdraw the extra booking first.';
 dict.uk.aboutOneText='Особисті й групові чати, профілі та ролі, погодження відпусток і лікарняних, особистий час у годинах, загальні вихідні, бонуси +1 та експорт календаря для Outlook.';
+dict.en.anniversaryShort='Anniversary';
+dict.uk.anniversaryShort='Річниця';
+dict.en.anniversaryBooked='Demo bonus day scheduled';
+dict.uk.anniversaryBooked='Тестовий бонусний вихідний призначено';
+dict.en.anniversaryNotBooked='Anniversary saved; bonus day not scheduled';
+dict.uk.anniversaryNotBooked='Річницю збережено; бонусний вихідний не призначено';
 dict.en.anniversaryDemoNote='Demo only: Saving an anniversary date creates a +1 anniversary bonus and schedules it on that workday if available. It is not a confirmed company benefit. The booking applies to the selected year only.';
 dict.uk.anniversaryDemoNote='Лише демо: дата річниці додає +1 бонусний день і позначає вихідний у календарі, якщо дата робоча та вільна. Це не затверджена пільга компанії. Бонус стосується вибраного року.';
 dict.en.anniversaryScheduled='A demo anniversary bonus now appears in the calendar.';
@@ -35,40 +41,67 @@ function memberLabel(n){if(lang==='en')return `${n} ${n===1?'member':'members'}`
 function personaControl(){return `<label class="persona-control"><span>${esc(t('adminDemo'))}</span><select id="demo-actor" aria-label="${esc(t('adminDemo'))}">${activePeople().map(p=>`<option value="${p.id}" ${p.id===actorId()?'selected':''}>${esc(p.name)} · ${esc(t(roleKey(p.role)))}</option>`).join('')}</select></label>`}
 /* Anniversaries are auto-scheduled in the local demo only, not a KEL policy. */
 function syncAnniversaryDemoBonus(p){
- const day=p.anniversary||'';
- const valid=p.active!==false&&validDate(day);
+ const day=p.anniversary||'',valid=p.active!==false&&validDate(day);
  const year=valid?Number(day.slice(0,4)):null;
  const grantId=year===null?'':`anniversary-demo-${p.id}-${year}`;
  const bookingId=year===null?'':`anniversary-demo-booking-${p.id}-${year}`;
- const obsolete=state.bonuses.filter(g=>g.autoAnniversaryDemo===true&&g.person===p.id&&g.id!==grantId);
- const obsoleteIds=new Set(obsolete.map(g=>g.id));
- if(obsoleteIds.size){
-  state.bonuses=state.bonuses.filter(g=>!obsoleteIds.has(g.id));
-  state.requests=state.requests.filter(r=>!obsoleteIds.has(r.grantId)||r.autoAnniversaryDemo!==true);
+ const oldAuto=state.bonuses.filter(g=>g.autoAnniversaryDemo===true&&g.person===p.id&&g.id!==grantId);
+ const oldIds=new Set(oldAuto.map(g=>g.id));
+ if(oldIds.size){
+  state.bonuses=state.bonuses.filter(g=>!oldIds.has(g.id));
+  state.requests=state.requests.filter(r=>!oldIds.has(r.grantId)||r.autoAnniversaryDemo!==true);
  }
  if(!valid)return 'none';
+ // Reuse an existing anniversary grant instead of silently skipping calendar scheduling.
  const manual=state.bonuses.find(g=>g.person===p.id&&g.year===year&&g.reason==='anniversary'&&g.autoAnniversaryDemo!==true&&g.active!==false);
- if(manual)return 'manual';
- let grant=state.bonuses.find(g=>g.id===grantId);
+ let auto=state.bonuses.find(g=>g.id===grantId);
+ if(manual&&auto){
+  state.bonuses=state.bonuses.filter(g=>g.id!==auto.id);
+  auto=null;
+ }
+ let grant=manual||auto;
  if(!grant){
-  grant={id:grantId,person:p.id,reason:'anniversary',year,days:1,expiry:'',active:true,
-   created:TODAY,createdBy:'demo',autoAnniversaryDemo:true};
+  grant={id:grantId,person:p.id,reason:'anniversary',year,days:1,expiry:'',
+   active:true,created:TODAY,createdBy:'demo',autoAnniversaryDemo:true};
   state.bonuses.push(grant);
  }
  const booked=state.requests.find(r=>r.id===bookingId);
- if(grant.active===false)return 'revoked';
+ // Respect cancellations made by the demonstrator. Do not silently recreate them.
  if(booked?.status==='cancelled')return 'cancelled';
- const requested={id:bookingId,person:p.id,type:'bonus',grantId:grant.id,start:day,end:day,
-  status:'approved',note:'DEMO ONLY — automatically scheduled anniversary bonus; not an approved company policy.',
+ if(grant.active===false)return 'revoked';
+ if(grant.expiry&&grant.expiry<day)return 'expired';
+ if(grantBookings(grant,bookingId).length){
+  // An existing grant may already be booked for another date.
+  if(booked?.autoAnniversaryDemo===true)state.requests=state.requests.filter(r=>r.id!==bookingId);
+  return 'bookedElsewhere';
+ }
+ const req={id:bookingId,person:p.id,type:'bonus',grantId:grant.id,start:day,end:day,
+  status:'approved',note:'DEMO ONLY — anniversary bonus, not an approved company policy.',
   created:TODAY,autoAnniversaryDemo:true};
- if(!isWorkingDate(day)||overlaps(requested,bookingId)){
+ if(!isWorkingDate(day)||overlaps(req,bookingId)){
   if(booked?.autoAnniversaryDemo===true)state.requests=state.requests.filter(r=>r.id!==bookingId);
   return 'unscheduled';
  }
- if(booked?.autoAnniversaryDemo===true)Object.assign(booked,requested);
- else if(!booked)state.requests.push(requested);
+ if(booked?.autoAnniversaryDemo===true)Object.assign(booked,req);
+ else if(!booked)state.requests.push(req);
  return 'scheduled';
 }
+function anniversaryCalendarMarker(p,date,asMonth=false){
+ if(p.anniversary!==date)return '';
+ const actualBonus=state.requests.some(r=>r.person===p.id&&r.type==='bonus'&&r.status==='approved'&&r.start<=date&&r.end>=date);
+ if(actualBonus)return '';
+ const label=`${p.name} · ${t('anniversaryDate')} · ${t('anniversaryNotBooked')}`;
+ return asMonth
+  ?`<button class="calendar-event occasion" data-action="anniversary-info" data-id="${esc(p.id)}" aria-label="${esc(label)}" title="${esc(label)}">${icon('gift')}${esc(p.name.split(' ')[0])} · ${esc(t('anniversaryShort'))}</button>`
+  :`<button class="roster-event occasion" data-action="anniversary-info" data-id="${esc(p.id)}" aria-label="${esc(label)}" title="${esc(label)}">${icon('gift')}</button>`;
+}
+function anniversaryCalendarDetails(id){
+ const p=state.people.find(p=>p.id===id);
+ if(!p?.anniversary)return;
+ const day=p.anniversary,book=state.requests.find(r=>r.person===id&&r.type==='bonus'&&r.status==='approved'&&r.start<=day&&r.end>=day);
+ showModal(t('anniversaryDate'),`<div class="selected-info">${av(p,'lg')}<div><h3>${esc(p.name)}</h3><p>${esc(p.job)}</p></div></div><div class="info-section"><b>${esc(t('dates'))}</b>${esc(fmt(day))}</div><div class="info-section"><b>${esc(t('status'))}</b>${esc(t(book?'anniversaryBooked':'anniversaryNotBooked'))}</div><p class="modal-subtitle">${esc(t('anniversaryDemoNote'))}</p>`,btn(t('close'),'close-modal','primary','','type="button"'));
+}
+
 function initializeHR(){
  for(const p of state.people){p.role??=p.id==='darren'?'admin':p.id==='david'?'manager':'employee';p.active??=true;p.email??=`${p.id==='me'?'bohdan.demo':p.name.toLowerCase().replace(/[^a-z]+/g,'.')}@example.com`;p.allowances??={vacation:20,sick:7,personal:30};}
  state.settings??={hoursPerDay:8};state.holidays??=[];state.bonuses??=[];state.audit??=[];state.demoActor??='darren';
@@ -127,7 +160,7 @@ function submitUser(form){if(!canAdmin())return;const d=new FormData(form),id=St
  const patch={name:name.slice(0,70),email,job:String(d.get('job')).trim().slice(0,70),dept:d.get('dept'),role,active,birthday,anniversary,allowances:limits,initials:name.split(/\s+/).slice(0,2).map(n=>n[0]).join('').toUpperCase()};
  if(old)Object.assign(old,patch);else{const p={...patch,id:uid(),color:'#e2ecde',ink:'#5e8153'};state.people.push(p);for(const c of state.channels.filter(c=>c.kind==='group'&&!c.private))c.members.push(p.id)}
  const anniversaryResult=syncAnniversaryDemoBonus(old||state.people.at(-1));
- audit('auditUser',`${name} · ${email}`);persist();closeModal();render();toast(t('userSaved')+(anniversaryResult==='scheduled'?' '+t('anniversaryScheduled'):anniversaryResult==='unscheduled'?' '+t('anniversaryUnscheduled'):''));
+ audit('auditUser',`${name} · ${email}`);persist();closeModal();render();toast(t('userSaved')+(anniversaryResult==='scheduled'?' '+t('anniversaryScheduled'):anniversaryResult!=='scheduled'&&anniversaryResult!=='none'?' '+t('anniversaryUnscheduled'):''));
 }
 function toggleUser(id){if(!canAdmin())return;const p=person(id);if(p.id===actorId()&&p.active){toast(t('selfDeactivate'));return}if(p.active&&p.role==='admin'&&!state.people.some(x=>x.id!==id&&x.active&&x.role==='admin')){toast(t('lastAdmin'));return}p.active=!p.active;audit('auditUser',`${p.name} · ${p.active?'active':'inactive'}`);persist();render()}
 function holidayForm(id){if(!canAdmin())return;const h=id?state.holidays.find(h=>h.id===id):{title:'',start:nextWork(TODAY,5),end:nextWork(TODAY,5)};showModal(t(id?'editHoliday':'addHoliday'),`<p class="modal-subtitle">${esc(t('closureNote'))}</p><input type="hidden" name="id" value="${esc(id||'')}"><label class="field"><span>${esc(t('holidayTitle'))}</span><input name="title" required maxlength="90" placeholder="${esc(t('holidayPlaceholder'))}" value="${esc(h.nameKey?t(h.nameKey):h.title)}"></label><div class="field-row"><label class="field"><span>${esc(t('from'))}</span><input type="date" name="start" required value="${h.start}"></label><label class="field"><span>${esc(t('to'))}</span><input type="date" name="end" required value="${h.end}"></label></div><div class="request-summary">${icon('calendar')}<span>${esc(t('holidayRecount'))}</span></div><p class="form-error" id="form-error" role="alert"></p>`,modalActions(t('save')),'holiday-form')}
@@ -175,8 +208,8 @@ function calendarEvents(date,personId){if(!isWorkingDate(date))return [];return 
 function eventType(r){return canManage()||r.person===actorId()||r.type==='bonus'?r.type:'publicAway'}
 function calendarLegend(){const types=canManage()?['vacation','sick','personal','bonus']:['publicAway','bonus'];return `<div class="hr-legend">${types.map(type=>`<span><i class="legend-box ${type}">${icon(typeIcon(type))}</i>${esc(t(type))}</span>`).join('')}<span><i class="legend-box closure">${icon('calendar')}</i>${esc(t('companyClosed'))}</span><span><i class="legend-box weekend"></i>${esc(t('weekend'))}</span>${calendarPending?`<span><i class="legend-box pending"></i>${esc(t('pendingLegend'))}</span>`:''}</div>`}
 renderCalendar=function(){const first=new Date(month.getFullYear(),month.getMonth(),1,12);return `${pageHeading('PEOPLE & PLANNING',t('calendar'),t('calendarSub'),btn(t('request'),'request','primary','plus'))}<section class="card calendar-card"><div class="calendar-toolbar"><div class="month-switch"><button class="icon-btn" data-action="month-prev" aria-label="${esc(t('monthBack'))}">${icon('left')}</button><h2>${esc(first.toLocaleDateString(locale(),{month:'long',year:'numeric'}))}</h2><button class="icon-btn" data-action="month-next" aria-label="${esc(t('monthNext'))}">${icon('right')}</button><button class="text-button" data-action="month-today">${esc(t('today'))}</button></div><div class="calendar-controls"><div class="segmented"><button data-action="calendar-mode" data-mode="team" class="${calendarMode==='team'?'selected':''}">${esc(t('calendarTeam'))}</button><button data-action="calendar-mode" data-mode="month" class="${calendarMode==='month'?'selected':''}">${esc(t('calendarMonth'))}</button></div><select class="filter-select" id="calendar-dept" aria-label="${esc(t('allDepartments'))}">${departmentOptions(department)}</select></div></div><div class="calendar-subtoolbar"><label class="pending-switch"><input type="checkbox" id="calendar-pending" ${calendarPending?'checked':''}>${esc(t('showPending'))}</label><button class="text-button" data-action="export-outlook">${icon('download')}${esc(t('outlookExport'))} (.ics)</button></div>${calendarMode==='team'?teamCalendar(first):monthCalendar(first)}<div class="calendar-bottom">${calendarLegend()}<p>${esc(t('calendarPrivacy'))}</p></div></section><div class="calendar-below"><div class="privacy-card">${icon('gift')}<div><h3>${esc(t('bonusBalance'))}</h3><p>${esc(t('bonusSeparate'))} ${esc(t('bonusDayNotTaken'))}</p>${canAdmin()?btn(t('grantBonus'),'grant-bonus','text-button','arrow'):''}</div></div><div class="privacy-card outlook-info">${icon('calendar')}<div><h3>Microsoft Outlook</h3><p>${esc(t('outlookNote'))}</p></div></div></div>`};
-function teamCalendar(first){const n=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();const dates=Array.from({length:n},(_,i)=>iso(new Date(first.getFullYear(),first.getMonth(),i+1,12)));const ps=activePeople().filter(p=>department==='all'||p.dept===department);return `<div class="roster-scroll" tabindex="0" aria-label="${esc(t('calendarTeam'))}"><table class="roster-table"><thead><tr><th class="roster-name">${esc(t('employee'))}<small>${esc(first.toLocaleDateString(locale(),{month:'short',year:'numeric'}))}</small></th>${dates.map(d=>`<th class="${d===TODAY?'today':''} ${[0,6].includes(toDate(d).getDay())?'weekend':''}"><span>${esc(fmt(d,{weekday:'short'}))}</span><b>${toDate(d).getDate()}</b></th>`).join('')}</tr></thead><tbody>${ps.map(p=>`<tr><th scope="row" class="roster-name"><div class="table-person">${av(p,'sm')}<div><b>${esc(p.name)}</b><small>${esc(t(p.dept))}</small></div></div></th>${dates.map(d=>{const h=companyClosure(d),rs=calendarEvents(d,p.id),weekend=[0,6].includes(toDate(d).getDay());return `<td class="${weekend?'weekend':''} ${d===TODAY?'today':''}">${h?`<button class="roster-event closure" data-action="closure-detail" data-id="${h.id}" aria-label="${esc(t('companyClosed'))} · ${esc(h.nameKey?t(h.nameKey):h.title)} · ${esc(fmt(d))}">${icon('calendar')}</button>`:rs.length?rs.map(r=>`<button class="roster-event ${eventType(r)} ${r.status==='pending'?'pending-event':''} ${r.unit==='hours'?'partial':''}" data-action="calendar-event" data-id="${r.id}" aria-label="${esc(p.name)} · ${esc(t(eventType(r)))} · ${esc(fmt(d))}" title="${esc(t(eventType(r)))}${r.unit==='hours'?' · '+esc(duration(r)):''}">${icon(typeIcon(eventType(r)))}</button>`).join(''):`<span class="empty-roster-day">${toDate(d).getDate()}</span>`}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`}
-function monthCalendar(first){const begin=startWeek(iso(first)),n=Math.ceil(((first.getDay()+6)%7+new Date(first.getFullYear(),first.getMonth()+1,0).getDate())/7)*7;return `<div class="calendar-days">${Array.from({length:7},(_,i)=>`<div>${esc(fmt(addDays('2026-11-02',i),{weekday:'short'}))}</div>`).join('')}</div><div class="calendar-grid">${Array.from({length:n},(_,i)=>{const d=addDays(begin,i),date=toDate(d),h=companyClosure(d);return `<div class="calendar-cell ${date.getMonth()!==first.getMonth()?'other':''} ${[0,6].includes(date.getDay())?'weekend':''} ${d===TODAY?'today':''}"><div class="day-number"><span>${date.getDate()}</span></div>${h?`<button class="calendar-event closure" data-action="closure-detail" data-id="${h.id}">${icon('calendar')}${esc(t('companyClosed'))}</button>`:calendarEvents(d).filter(r=>department==='all'||person(r.person).dept===department).map(r=>`<button class="calendar-event ${eventType(r)} ${r.status==='pending'?'pending-event':''}" data-action="calendar-event" data-id="${r.id}" title="${esc(person(r.person).name)} · ${esc(t(eventType(r)))}">${r.type==='bonus'?icon('gift'):''}${esc(person(r.person).name.split(' ')[0])} · ${esc(t(eventType(r)))}</button>`).join('')}</div>`}).join('')}</div>`}
+function teamCalendar(first){const n=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();const dates=Array.from({length:n},(_,i)=>iso(new Date(first.getFullYear(),first.getMonth(),i+1,12)));const ps=activePeople().filter(p=>department==='all'||p.dept===department);return `<div class="roster-scroll" tabindex="0" aria-label="${esc(t('calendarTeam'))}"><table class="roster-table"><thead><tr><th class="roster-name">${esc(t('employee'))}<small>${esc(first.toLocaleDateString(locale(),{month:'short',year:'numeric'}))}</small></th>${dates.map(d=>`<th class="${d===TODAY?'today':''} ${[0,6].includes(toDate(d).getDay())?'weekend':''}"><span>${esc(fmt(d,{weekday:'short'}))}</span><b>${toDate(d).getDate()}</b></th>`).join('')}</tr></thead><tbody>${ps.map(p=>`<tr><th scope="row" class="roster-name"><div class="table-person">${av(p,'sm')}<div><b>${esc(p.name)}</b><small>${esc(t(p.dept))}</small></div></div></th>${dates.map(d=>{const h=companyClosure(d),rs=calendarEvents(d,p.id),weekend=[0,6].includes(toDate(d).getDay());return `<td class="${weekend?'weekend':''} ${d===TODAY?'today':''}">${h?`<button class="roster-event closure" data-action="closure-detail" data-id="${h.id}" aria-label="${esc(t('companyClosed'))} · ${esc(h.nameKey?t(h.nameKey):h.title)} · ${esc(fmt(d))}">${icon('calendar')}</button>${anniversaryCalendarMarker(p,d)}`:rs.length?rs.map(r=>`<button class="roster-event ${eventType(r)} ${r.status==='pending'?'pending-event':''} ${r.unit==='hours'?'partial':''}" data-action="calendar-event" data-id="${r.id}" aria-label="${esc(p.name)} · ${esc(t(eventType(r)))} · ${esc(fmt(d))}" title="${esc(t(eventType(r)))}${r.unit==='hours'?' · '+esc(duration(r)):''}">${icon(typeIcon(eventType(r)))}</button>`).join('')+anniversaryCalendarMarker(p,d):`<span class="empty-roster-day">${toDate(d).getDate()}</span>`+anniversaryCalendarMarker(p,d)}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`}
+function monthCalendar(first){const begin=startWeek(iso(first)),n=Math.ceil(((first.getDay()+6)%7+new Date(first.getFullYear(),first.getMonth()+1,0).getDate())/7)*7;return `<div class="calendar-days">${Array.from({length:7},(_,i)=>`<div>${esc(fmt(addDays('2026-11-02',i),{weekday:'short'}))}</div>`).join('')}</div><div class="calendar-grid">${Array.from({length:n},(_,i)=>{const d=addDays(begin,i),date=toDate(d),h=companyClosure(d);return `<div class="calendar-cell ${date.getMonth()!==first.getMonth()?'other':''} ${[0,6].includes(date.getDay())?'weekend':''} ${d===TODAY?'today':''}"><div class="day-number"><span>${date.getDate()}</span></div>${h?`<button class="calendar-event closure" data-action="closure-detail" data-id="${h.id}">${icon('calendar')}${esc(t('companyClosed'))}</button>`:calendarEvents(d).filter(r=>department==='all'||person(r.person).dept===department).map(r=>`<button class="calendar-event ${eventType(r)} ${r.status==='pending'?'pending-event':''}" data-action="calendar-event" data-id="${r.id}" title="${esc(person(r.person).name)} · ${esc(t(eventType(r)))}">${r.type==='bonus'?icon('gift'):''}${esc(person(r.person).name.split(' ')[0])} · ${esc(t(eventType(r)))}</button>`).join('')+activePeople().filter(p=>(department==='all'||p.dept===department)&&p.anniversary===d).map(p=>anniversaryCalendarMarker(p,d,true)).join('')}</div>`}).join('')}</div>`}
 function closureDetails(id){const h=state.holidays.find(h=>h.id===id);if(!h)return;showModal(t('companyClosed'),`<div class="closure-detail-symbol">${icon('calendar')}</div><div class="info-section"><b>${esc(h.nameKey?t(h.nameKey):h.title)}</b>${esc(range(h.start,h.end))}</div><p class="modal-subtitle">${esc(t('closureNote'))}</p>`,`${canAdmin()?btn(t('editHoliday'),'edit-holiday','secondary','edit',`data-id="${h.id}" type="button"`):''}${btn(t('close'),'close-modal','primary','','type="button"')}`)}
 
 function utcForWorkTime(date,time){
@@ -210,7 +243,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
  else if(a==='add-holiday')holidayForm();else if(a==='edit-holiday')holidayForm(id);else if(a==='toggle-holiday')toggleHoliday(id);
  else if(a==='grant-bonus')grantForm();else if(a==='toggle-bonus')toggleBonus(id);else if(a==='request-bonus')requestModal('bonus');
  else if(a==='calendar-mode'){calendarMode=b.dataset.mode;render()}
- else if(a==='closure-detail')closureDetails(id);else if(a==='export-outlook')exportOutlook();
+ else if(a==='anniversary-info')anniversaryCalendarDetails(id);else if(a==='closure-detail')closureDetails(id);else if(a==='export-outlook')exportOutlook();
 });
 document.addEventListener('change',e=>{if(e.target.id==='demo-actor'){clearAttachmentQueue();const p=state.people.find(p=>p.id===e.target.value&&p.active);if(!p)return;state.demoActor=p.id;activeChat='general';requestTab='mine';messageSearch='';closeModal();persist();render()}else if(e.target.id==='request-status'){requestStatus=e.target.value;render()}else if(e.target.id==='request-type'){requestType=e.target.value;render()}else if(e.target.id==='calendar-pending'){calendarPending=e.target.checked;render()}});
 document.addEventListener('input',e=>{if(e.target.id==='admin-people-search'){adminPeopleQuery=e.target.value;$('#admin-users-table').innerHTML=userRows()}});
