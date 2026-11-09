@@ -28,17 +28,13 @@ function isWorkingDate(date){const day=toDate(date).getDay();return day!==0&&day
 function memberLabel(n){if(lang==='en')return `${n} ${n===1?'member':'members'}`;const category=new Intl.PluralRules('uk').select(n);return `${n} ${category==='one'?'учасник':category==='few'?'учасники':'учасників'}`}
 function personaControl(){return `<label class="persona-control"><span>${esc(t('adminDemo'))}</span><select id="demo-actor" aria-label="${esc(t('adminDemo'))}">${activePeople().map(p=>`<option value="${p.id}" ${p.id===actorId()?'selected':''}>${esc(p.name)} · ${esc(t(roleKey(p.role)))}</option>`).join('')}</select></label>`}
 function initializeHR(){
- for(const p of state.people){p.role??=(p.id==='me'||p.id==='emma')?'admin':['james','liam'].includes(p.id)?'manager':'employee';p.active??=true;p.email??=`${p.id==='me'?'bohdan.demo':p.name.toLowerCase().replace(/[^a-z]+/g,'.')}@example.com`;p.allowances??={vacation:20,sick:7,personal:30};}
- state.settings??={hoursPerDay:8};state.holidays??=[];state.bonuses??=[];state.audit??=[];state.demoActor??='me';
+ for(const p of state.people){p.role??=p.id==='darren'?'admin':p.id==='david'?'manager':'employee';p.active??=true;p.email??=`${p.id==='me'?'bohdan.demo':p.name.toLowerCase().replace(/[^a-z]+/g,'.')}@example.com`;p.allowances??={vacation:20,sick:7,personal:30};}
+ state.settings??={hoursPerDay:8};state.holidays??=[];state.bonuses??=[];state.audit??=[];state.demoActor??='darren';
  if(!activePeople().some(p=>p.id===actorId()))state.demoActor='me';
  if(!state.hrVersion){
   state.holidays.push({id:'sample-closure',nameKey:'sampleHoliday',title:'Company day off · sample',start:nextWork(TODAY,12),end:nextWork(TODAY,12),active:true,createdBy:'me'});
-  state.bonuses.push({id:'sample-bonus-me',person:'me',reason:'ownerGift',year:Number(TODAY.slice(0,4)),days:1,created:TODAY,createdBy:'emma',expiry:'',active:true});
-  const date=nextWork(TODAY,6);
-  state.bonuses.push({id:'sample-bonus-james',person:'james',reason:'anniversary',year:Number(TODAY.slice(0,4)),days:1,created:TODAY,createdBy:'me',expiry:'',active:true});
-  state.requests.push({id:'sample-bonus-request',person:'james',type:'bonus',grantId:'sample-bonus-james',start:date,end:date,status:'approved',note:'Demo owner bonus.',created:TODAY,decidedBy:'me',decidedAt:new Date().toISOString()});
-  state.requests.push({id:'sample-sick-request',person:'sarah',type:'sick',start:nextWork(TODAY,3),end:nextWork(TODAY,3),status:'pending',note:'',created:TODAY});
-  state.hrVersion=2;
+  state.bonuses.push({id:'sample-bonus-me',person:'me',reason:'ownerGift',year:Number(TODAY.slice(0,4)),days:1,created:TODAY,createdBy:'me',expiry:'',active:true});
+  state.hrVersion=3;
  }
  persist();
 }
