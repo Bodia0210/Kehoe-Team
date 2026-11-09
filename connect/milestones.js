@@ -135,7 +135,7 @@ function showServiceCelebration(items,preview=false){
  const streamers=Array.from({length:34},(_,i)=>'<i class="party-ribbon" style="--x:'+(i*37%98)+'%;--d:'+(i%7*.12)+'s;--speed:'+(2.7+i%5*.23)+'s;--turn:'+(i%2?300:-330)+'deg;--hue:'+(i*53%360)+'"></i>').join('');
  const dialog=document.createElement('div');dialog.className='work-celebration-backdrop';
  dialog.innerHTML='<section class="work-celebration" role="dialog" aria-modal="true" aria-labelledby="celebration-title">'+
- '<div class="party-scene" aria-hidden="true">'+fireworks+streamers+'</div>'+
+ '<div class="party-scene" aria-hidden="true"><img class="party-gif" src="./assets/work-anniversary-fireworks.gif" alt="">'+fireworks+streamers+'</div>'+
  '<button type="button" class="celebration-dismiss-icon" data-action="dismiss-celebration" aria-label="'+esc(t('close'))+'">'+icon('x')+'</button>'+
  '<div class="celebration-copy"><div class="celebration-kicker">'+icon('medal')+' KEL & MIDWEST CONNECT</div>'+
  '<h2 id="celebration-title">'+esc(t('celebrationTitle'))+'</h2>'+cards+
