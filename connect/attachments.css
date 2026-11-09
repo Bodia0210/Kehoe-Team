@@ -1,0 +1,32 @@
+/* Local demo attachments for KEL Connect */
+.attachment-file-input{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
+.composer-tools{display:flex;align-items:center;gap:7px}
+.composer .attach-button{width:30px;height:30px;color:#4b7460;border-radius:7px}
+.composer .attach-button:hover,.composer .attach-button:focus-visible{background:#e7f0e7;color:#24583d}
+.composer.drag-files-over{outline:2px dashed #479866;outline-offset:3px;background:#f3fbf2}
+.composer.drag-files-over:after{content:"Drop files here";pointer-events:none;position:absolute;inset:3px;background:#f0f8eced;border:1px dashed #4e9262;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:13px;color:#316e48;z-index:8}
+.attachment-composer-note{font-size:9px;color:#8a9f89;margin:3px 0 0;padding:0 2px;line-height:1.5}
+.attachment-preview{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px}
+.attachment-preview:empty{display:none}
+.attachment-preview-title{width:100%;font-size:10px;font-weight:750;color:#58715b;padding-top:6px}
+.attachment-chip{display:flex;align-items:center;gap:6px;min-height:34px;max-width:100%;padding:5px 6px 5px 9px;border:1px solid #d8e6d8;border-radius:7px;background:#f3f8f2;color:#345b40}
+.attachment-chip>.icon{width:15px;height:15px;flex:none}
+.attachment-chip-name{font-size:11px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+.attachment-chip small{color:#78917a;font-size:9px;white-space:nowrap}
+.attachment-chip button{display:grid;place-items:center;flex:none;width:23px;height:23px;border-radius:5px;color:#697d6c}
+.attachment-chip button:hover,.attachment-chip button:focus-visible{background:#e1e9df}
+.attachment-chip button .icon{width:13px;height:13px}
+.message-attachments{display:flex;flex-direction:column;gap:8px;max-width:370px;margin-top:9px}
+.message-attachment{display:flex;align-items:center;gap:11px;max-width:100%;min-width:230px;border:1px solid #dce7dd;background:#f6faf5;padding:8px 12px 8px 8px;border-radius:11px;text-decoration:none;transition:background .15s ease,border .15s ease}
+.message-attachment:hover,.message-attachment:focus-visible{background:#e8f2e7;border-color:#8aae8c}
+.attachment-thumbnail{width:52px;height:52px;display:grid;place-items:center;background:#e3eee4;color:#527b5a;border-radius:8px;position:relative;overflow:hidden;flex:none}
+.attachment-thumbnail>.icon{width:22px;height:22px}
+.attachment-thumbnail img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.attachment-info{min-width:0;display:flex;flex-direction:column;gap:6px;flex:1}
+.attachment-info strong{font-size:12px;font-weight:750;color:#2c4935;overflow-wrap:anywhere}
+.attachment-info small{font-size:10px;color:#788879}
+.message-attachment>.icon{width:15px;height:15px;color:#79917a;flex:none}
+.message-attachment.file-unavailable{opacity:.7;cursor:not-allowed}
+.message-attachment.file-unavailable .attachment-info small:after{content:" · unavailable"}
+.composer .send-btn:disabled{opacity:.4;cursor:wait}
+@media(max-width:680px){.attachment-chip-name{max-width:120px}.message-attachments{max-width:100%}.message-attachment{min-width:0}.composer-hint{flex-direction:column;gap:2px}.attachment-composer-note{font-size:9px}}
