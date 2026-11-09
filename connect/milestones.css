@@ -30,6 +30,7 @@
 .celebration-dismiss-icon .icon{width:16px;height:16px}
 .celebration-preview{font-size:11px;color:#d4eab7;font-style:italic;padding-top:4px}
 .party-scene{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.party-gif{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.56;filter:saturate(1.1);pointer-events:none}
 .party-burst{position:absolute;top:9%;left:13%;width:10px;height:10px;animation:burst-float 2.9s ease-in-out infinite}
 .party-burst.burst-1{left:83%;top:21%;animation-delay:.5s}
 .party-burst.burst-2{left:48%;top:5%;animation-delay:1.05s}
